@@ -7,6 +7,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useLocale } from '@/hooks/useLocale';
 import { cn, getDaysUntilExpiry } from '@/lib/utils';
+import { exportCSV, printAsPDF } from '@/lib/exportUtils';
+import { ExportMenu } from '@/components/ui/ExportMenu';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -107,9 +109,35 @@ export function InventoryPage() {
             {formatNumber(products.length)} {inv.products} · {formatNumber(batches.filter(b => b.status === 'active').length)} {inv.activeBatches}
           </p>
         </div>
-        <Button size="sm" leftIcon={<Plus size={14} />} onClick={() => { setAddBatchProduct(null); setAddBatchOpen(true); }}>
-          {inv.addBatch}
-        </Button>
+        <div className={cn('flex items-center gap-2', isRTL && 'flex-row-reverse')}>
+          <ExportMenu
+            onExportCSV={() => exportCSV(
+              filtered.map(i => ({
+                [inv.productCol]: i.product.name,
+                'SKU': i.product.sku,
+                [inv.categoryCol]: i.product.category,
+                [inv.qtyCol]: i.totalQuantity,
+                [inv.locationCol]: i.product.storageLocation,
+                [inv.expiryCol]: i.earliestExpiry ?? '',
+                [inv.riskCol]: i.riskLevel,
+                [inv.stockCol]: i.stockStatus,
+                [inv.valueCol]: i.totalValue.toFixed(2),
+              })),
+              'freshflow-inventory'
+            )}
+            onPrint={() => printAsPDF(
+              isRTL ? 'گزارش موجودی' : 'Inventory Report',
+              `<h1>${isRTL ? 'موجودی' : 'Inventory'}</h1><table>
+               <tr>${[inv.productCol,'SKU',inv.categoryCol,inv.qtyCol,inv.riskCol].map(h=>`<th>${h}</th>`).join('')}</tr>
+               ${filtered.map(i=>`<tr>${[i.product.name,i.product.sku,i.product.category,i.totalQuantity,i.riskLevel].map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}
+               </table>`,
+              isRTL
+            )}
+          />
+          <Button size="sm" leftIcon={<Plus size={14} />} onClick={() => { setAddBatchProduct(null); setAddBatchOpen(true); }}>
+            {inv.addBatch}
+          </Button>
+        </div>
       </div>
 
       {/* Summary bar */}

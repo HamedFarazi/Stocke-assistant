@@ -1,6 +1,4 @@
 import Tippy from '@tippyjs/react';
-import 'tippy.js/dist/tippy.css';
-import 'tippy.js/animations/shift-away-subtle.css';
 import type { ReactElement, ReactNode } from 'react';
 import { useLanguageStore } from '@/stores/languageStore';
 
@@ -12,16 +10,24 @@ interface TooltipProps {
   disabled?: boolean;
 }
 
-export function Tooltip({ content, children, placement = 'top', delay = [200, 0], disabled }: TooltipProps) {
+export function Tooltip({
+  content,
+  children,
+  placement = 'top',
+  delay = [200, 0],
+  disabled,
+}: TooltipProps) {
   const { language } = useLanguageStore();
   const isRTL = language === 'fa';
+
+  if (disabled || !content) return children;
 
   return (
     <Tippy
       content={
         <span
-          style={{ fontFamily: isRTL ? "'Vazirmatn', sans-serif" : "'Inter', sans-serif" }}
           className="text-xs"
+          style={{ fontFamily: isRTL ? "'Vazirmatn', sans-serif" : "'Inter', sans-serif" }}
         >
           {content}
         </span>
@@ -29,8 +35,8 @@ export function Tooltip({ content, children, placement = 'top', delay = [200, 0]
       placement={placement}
       delay={delay}
       animation="shift-away-subtle"
-      disabled={disabled}
       theme="freshflow"
+      arrow={true}
     >
       {children}
     </Tippy>

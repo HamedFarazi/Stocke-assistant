@@ -23,7 +23,6 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   const currentStore = stores.find(s => s.id === currentStoreId);
 
   const pendingOps = operations.filter(o => o.status === 'pending' || o.status === 'in-progress').length;
-  const unreadNotifs = notifications.filter(n => !n.isRead).length;
 
   const navItems = [
     { id: 'overview',     label: t.nav.overview,    icon: <LayoutDashboard size={16} /> },
@@ -103,30 +102,36 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
           {navItems.map((item) => (
-            <button
+            <Tooltip
               key={item.id}
-              onClick={() => onNavigate(item.id)}
-              className={cn(
-                'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm transition-colors',
-                isRTL ? 'flex-row-reverse text-right' : 'text-left',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600',
-                activeSection === item.id
-                  ? 'bg-green-50 text-green-800 font-medium'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-              )}
+              content={item.label}
+              placement={isRTL ? 'left' : 'right'}
+              disabled={sidebarOpen}
             >
-              <span className={cn('flex-shrink-0', activeSection === item.id ? 'text-green-700' : 'text-slate-400')}>
-                {item.icon}
-              </span>
-              {sidebarOpen && (
-                <span className="flex-1 truncate">{item.label}</span>
-              )}
-              {sidebarOpen && item.badge && item.badge > 0 && (
-                <span className="text-[10px] bg-red-500 text-white rounded-full px-1.5 py-0.5 min-w-[18px] text-center leading-none">
-                  {item.badge}
+              <button
+                onClick={() => onNavigate(item.id)}
+                className={cn(
+                  'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm transition-colors',
+                  isRTL ? 'flex-row-reverse text-right' : 'text-left',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600',
+                  activeSection === item.id
+                    ? 'bg-green-50 text-green-800 font-medium'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                )}
+              >
+                <span className={cn('flex-shrink-0', activeSection === item.id ? 'text-green-700' : 'text-slate-400')}>
+                  {item.icon}
                 </span>
-              )}
-            </button>
+                {sidebarOpen && (
+                  <span className="flex-1 truncate">{item.label}</span>
+                )}
+                {sidebarOpen && item.badge && item.badge > 0 && (
+                  <span className="text-[10px] bg-red-500 text-white rounded-full px-1.5 py-0.5 min-w-[18px] text-center leading-none">
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            </Tooltip>
           ))}
         </nav>
 

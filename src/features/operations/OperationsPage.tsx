@@ -4,6 +4,8 @@ import { products } from '@/data/products';
 import { useOperations } from '@/hooks/useOperations';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLocale } from '@/hooks/useLocale';
+import { exportCSV, printAsPDF } from '@/lib/exportUtils';
+import { ExportMenu } from '@/components/ui/ExportMenu';
 import { cn, getPriorityColor, getStatusColor } from '@/lib/utils';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -93,6 +95,27 @@ export function OperationsPage() {
               <LayoutGrid size={14} />
             </button>
           </div>
+          <ExportMenu
+            onExportCSV={() => exportCSV(
+              filtered.map(o => ({
+                [op.operationTitle]: o.title,
+                [op.operationType]: o.type,
+                [t.common.priority]: o.priority,
+                [t.common.status]: o.status,
+                [op.dueDate]: new Date(o.dueDate).toLocaleDateString(),
+                [op.sourceWorkflow]: o.sourceWorkflowName ?? '',
+              })),
+              'freshflow-operations'
+            )}
+            onPrint={() => printAsPDF(
+              isRTL ? 'گزارش عملیات‌ها' : 'Operations Report',
+              `<h1>${isRTL ? 'عملیات‌ها' : 'Operations'}</h1><table>
+               <tr><th>${op.operationTitle}</th><th>${t.common.priority}</th><th>${t.common.status}</th><th>${op.dueDate}</th></tr>
+               ${filtered.map(o=>`<tr><td>${o.title}</td><td>${o.priority}</td><td>${o.status}</td><td>${new Date(o.dueDate).toLocaleDateString()}</td></tr>`).join('')}
+               </table>`,
+              isRTL
+            )}
+          />
           <Button size="sm" leftIcon={<Plus size={14} />} onClick={() => setCreateOpen(true)}>
             {op.newOperation}
           </Button>
