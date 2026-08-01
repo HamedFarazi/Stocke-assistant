@@ -1,0 +1,174 @@
+/* Google Fonts must come first */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Vazirmatn:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 158 64% 32%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 158 64% 32%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 158 64% 32%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Persian / RTL font */
+  html.font-persian body,
+  html.font-persian input,
+  html.font-persian select,
+  html.font-persian textarea,
+  html.font-persian button {
+    font-family: 'Vazirmatn', 'Inter', system-ui, sans-serif;
+    letter-spacing: 0;
+  }
+
+  html[dir="rtl"] {
+    text-align: right;
+  }
+
+  /* RTL: React Flow controls */
+  html[dir="rtl"] .react-flow__controls {
+    left: auto !important;
+    right: 10px !important;
+  }
+  html[dir="rtl"] .react-flow__minimap {
+    left: auto !important;
+    right: 10px !important;
+    bottom: 60px !important;
+  }
+
+  /* RTL: number inputs keep LTR for numeric content */
+  html[dir="rtl"] input[type="number"],
+  html[dir="rtl"] input[type="date"] {
+    direction: ltr;
+    text-align: right;
+  }
+}
+
+/* ── React Flow ── */
+.react-flow__node {
+  font-family: inherit;
+}
+.react-flow__edge-path {
+  stroke-width: 2;
+}
+.react-flow__controls-button {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ── Focus ── */
+:focus-visible {
+  outline: 2px solid #15803d;
+  outline-offset: 2px;
+}
+
+/* ── Settings nav glow border ───────────────────────────────────────────── */
+@keyframes spin-glow {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.settings-nav-glow {
+  position: relative;
+  border-radius: 0.75rem;
+  padding: 2px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.settings-nav-glow::before {
+  content: '';
+  position: absolute;
+  inset: -60%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 60deg,
+    #16a34a 120deg,
+    #4ade80 160deg,
+    #86efac 180deg,
+    #4ade80 200deg,
+    #16a34a 240deg,
+    transparent 300deg,
+    transparent 360deg
+  );
+  animation: spin-glow 3s linear infinite;
+  z-index: 0;
+}
+
+.settings-nav-glow::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: white;
+  border-radius: 0.6rem;
+  z-index: 1;
+}
+
+.settings-nav-inner {
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Tippy.js custom theme ──────────────────────────────────────────────────── */
+.tippy-box[data-theme~='freshflow'] {
+  background-color: #1e293b;
+  color: #f1f5f9;
+  border-radius: 6px;
+  font-size: 12px;
+  padding: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.tippy-box[data-theme~='freshflow'] .tippy-content {
+  padding: 5px 8px;
+}
+.tippy-box[data-theme~='freshflow'][data-placement^='top'] .tippy-arrow::before {
+  border-top-color: #1e293b;
+}
+.tippy-box[data-theme~='freshflow'][data-placement^='bottom'] .tippy-arrow::before {
+  border-bottom-color: #1e293b;
+}
+.tippy-box[data-theme~='freshflow'][data-placement^='left'] .tippy-arrow::before {
+  border-left-color: #1e293b;
+}
+.tippy-box[data-theme~='freshflow'][data-placement^='right'] .tippy-arrow::before {
+  border-right-color: #1e293b;
+}
