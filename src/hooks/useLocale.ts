@@ -8,35 +8,24 @@ export function toPersianNum(n: number | string): string {
 }
 
 function toJalali(date: Date): { year: number; month: number; day: number } {
-  // Accurate Gregorian → Jalali conversion
-  let jy: number, jm: number, jd: number;
-  const gy = date.getFullYear();
-  const gm = date.getMonth() + 1;
-  const gd = date.getDate();
-
-  let g_d_no: number;
-  const gy2 = gm > 2 ? gy + 1 : gy;
-  g_d_no = 365 * gy + Math.floor((gy2 + 3) / 4) - Math.floor((gy2 + 99) / 100) + Math.floor((gy2 + 399) / 400);
-  for (let i = 0; i < gm - 1; i++) g_d_no += [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][i];
-  if (gm > 2 && ((gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0)) g_d_no++;
-  g_d_no += gd - 1;
-
-  let j_d_no = g_d_no - 79;
-  const j_np = Math.floor(j_d_no / 12053);
-  j_d_no %= 12053;
-  jy = 979 + 33 * j_np + 4 * Math.floor(j_d_no / 1461);
-  j_d_no %= 1461;
-  if (j_d_no >= 366) {
-    jy += Math.floor((j_d_no - 1) / 365);
-    j_d_no = (j_d_no - 1) % 365;
+  try {
+    const formatter = new Intl.DateTimeFormat('en-US-u-ca-persian', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+    });
+    const parts = formatter.formatToParts(date);
+    let year = 1405, month = 1, day = 1;
+    for (const part of parts) {
+      if (part.type === 'year') year = parseInt(part.value, 10);
+      if (part.type === 'month') month = parseInt(part.value, 10);
+      if (part.type === 'day') day = parseInt(part.value, 10);
+    }
+    return { year, month, day };
+  } catch (e) {
+    const gy = date.getFullYear();
+    return { year: gy - 621, month: date.getMonth() + 1, day: date.getDate() };
   }
-  let i: number;
-  for (i = 0; i < 11 && j_d_no >= [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30][i]; i++) {
-    j_d_no -= [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30][i];
-  }
-  jm = i + 1;
-  jd = j_d_no + 1;
-  return { year: jy, month: jm, day: jd };
 }
 
 export function useLocale() {
@@ -92,12 +81,40 @@ export function useLocale() {
     return differenceInDays(parseISO(dateStr), new Date());
   }
 
+  function formatRelativeTime(dateStr: string): string {
+    try {
+      const date = typeof dateStr === 'string' ? parseISO(dateStr) : dateStr;
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMinutes = Math.max(0, Math.floor(diffMs / (1000 * 60)));
+      const diffHours = Math.floor(diffMinutes / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (isPersian) {
+        if (diffMinutes < 1) return 'همین الان';
+        if (diffMinutes < 60) return `حدود ${toPersianNum(diffMinutes)} دقیقه پیش`;
+        if (diffHours < 24) return `حدود ${toPersianNum(diffHours)} ساعت پیش`;
+        if (diffDays === 1) return '۱ روز پیش';
+        return `${toPersianNum(diffDays)} روز پیش`;
+      }
+
+      if (diffMinutes < 1) return 'just now';
+      if (diffMinutes < 60) return `about ${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+      if (diffHours < 24) return `about ${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+      if (diffDays === 1) return '1 day ago';
+      return `${diffDays} days ago`;
+    } catch {
+      return dateStr;
+    }
+  }
+
   return {
     formatDate,
     formatDateShort,
     formatDaysRemaining,
     formatNumber,
     formatDuration,
+    formatRelativeTime,
     getDaysUntilExpiry,
     isPersian,
     language,

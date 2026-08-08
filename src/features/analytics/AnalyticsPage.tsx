@@ -85,8 +85,8 @@ export function AnalyticsPage() {
       <div className="grid lg:grid-cols-2 gap-4">
         <Card padding="md">
           <CardHeader><CardTitle>{isRTL ? `${an.expiredValue} (تومان)` : an.expiredValueChart}</CardTitle></CardHeader>
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={expiredSlice}>
+          <ResponsiveContainer width="100%" height={210}>
+            <AreaChart data={expiredSlice} margin={{ top: 15, right: isRTL ? 40 : 20, left: isRTL ? 20 : 40, bottom: 20 }}>
               <defs>
                 <linearGradient id="expGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2} />
@@ -95,7 +95,7 @@ export function AnalyticsPage() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" reversed={isRTL} />
-              <YAxis tick={{ fontSize: 10 }} orientation={isRTL ? 'right' : 'left'} width={45} />
+              <YAxis tick={{ fontSize: 10, dx: isRTL ? 10 : -10 }} orientation={isRTL ? 'right' : 'left'} width={55} />
               <Tooltip content={<CustomTooltip />} />
               <Area type="monotone" dataKey="value" stroke="#ef4444" fill="url(#expGrad)" strokeWidth={2} />
             </AreaChart>
@@ -104,8 +104,8 @@ export function AnalyticsPage() {
 
         <Card padding="md">
           <CardHeader><CardTitle>{isRTL ? `${an.wastePrevented} (تومان)` : an.wastePreventedChart}</CardTitle></CardHeader>
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={wasteSlice}>
+          <ResponsiveContainer width="100%" height={210}>
+            <AreaChart data={wasteSlice} margin={{ top: 15, right: isRTL ? 40 : 20, left: isRTL ? 20 : 40, bottom: 20 }}>
               <defs>
                 <linearGradient id="wasteGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#15803d" stopOpacity={0.2} />
@@ -114,7 +114,7 @@ export function AnalyticsPage() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" reversed={isRTL} />
-              <YAxis tick={{ fontSize: 10 }} orientation={isRTL ? 'right' : 'left'} width={45} />
+              <YAxis tick={{ fontSize: 10, dx: isRTL ? 10 : -10 }} orientation={isRTL ? 'right' : 'left'} width={55} />
               <Tooltip content={<CustomTooltip />} />
               <Area type="monotone" dataKey="value" stroke="#15803d" fill="url(#wasteGrad)" strokeWidth={2} />
             </AreaChart>
@@ -126,21 +126,79 @@ export function AnalyticsPage() {
       <div className="grid lg:grid-cols-2 gap-4">
         <Card padding="md">
           <CardHeader><CardTitle>{an.riskByCategory}</CardTitle></CardHeader>
-          <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie data={expiryRiskByCategory} dataKey="value" nameKey="category" cx="50%" cy="50%"
-                outerRadius={70}
-                innerRadius={0}
-                label={(props: { category?: string; percent?: number }) =>
-                  `${props.category ?? ''} ${((props.percent ?? 0) * 100).toFixed(0)}%`
-                }
-                labelLine={{ strokeWidth: 1, stroke: '#94a3b8' }}
-                paddingAngle={2}>
-                {expiryRiskByCategory.map((_, idx) => <Cell key={idx} fill={COLORS[idx % COLORS.length]} />)}
-              </Pie>
-              <Tooltip formatter={(v: unknown) => formatCurrency(v as number)} />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-2">
+            <ResponsiveContainer width="100%" height={200} className="max-w-[220px]">
+              <PieChart>
+                <Pie
+                  data={expiryRiskByCategory}
+                  dataKey="value"
+                  nameKey="category"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={45}
+                  outerRadius={75}
+                  paddingAngle={3}
+                >
+                  {expiryRiskByCategory.map((_, idx) => (
+                    <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(v: unknown) => formatCurrency(v as number)} />
+              </PieChart>
+            </ResponsiveContainer>
+
+            {/* Custom Clean Legend for Pie Chart with Full Hover Tooltip Details */}
+            <div className={cn('flex-1 grid grid-cols-2 gap-2 text-xs w-full', isRTL && 'text-right')}>
+              {expiryRiskByCategory.map((item, idx) => {
+                const categoryNames: Record<string, string> = {
+                  'Dairy': 'لبنیات',
+                  'Bakery': 'نان و شیرینی',
+                  'Meat & Poultry': 'گوشت و پروتئین',
+                  'Produce': 'میوه و سبزیجات',
+                  'Seafood': 'فرآورده‌های دریایی',
+                  'Deli': 'پروتئین و کالباس',
+                };
+                const catName = isRTL ? (categoryNames[item.category] ?? item.category) : item.category;
+                const totalVal = expiryRiskByCategory.reduce((s, c) => s + c.value, 0);
+                const pct = Math.round((item.value / totalVal) * 100);
+                const fullTooltip = isRTL
+                  ? `دسته: ${catName}\nارزش کل در معرض خطر: ${formatCurrency(item.value)}\nسهم از کل: ${pct}٪`
+                  : `Category: ${catName}\nTotal Value at Risk: ${formatCurrency(item.value)}\nShare: ${pct}%`;
+
+                return (
+                  <div
+                    key={item.category}
+                    title={fullTooltip}
+                    className={cn(
+                      'group relative flex items-center gap-2 p-2 rounded-lg bg-slate-50 border border-slate-100 hover:bg-slate-100 hover:border-slate-300 hover:shadow-md transition-all cursor-pointer',
+                      isRTL && 'flex-row-reverse'
+                    )}
+                  >
+                    <span className="w-3 h-3 rounded-full flex-shrink-0 group-hover:scale-125 transition-transform" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-slate-800 truncate group-hover:text-green-800 transition-colors">{catName}</p>
+                      <p className="text-[10px] text-slate-500 font-medium">{formatCurrencyCompact(item.value)} ({pct}%)</p>
+                    </div>
+
+                    {/* Rich Floating Tooltip Card on Hover */}
+                    <div className={cn(
+                      'opacity-0 group-hover:opacity-100 pointer-events-none absolute z-50 bottom-full mb-1 left-1/2 -translate-x-1/2 w-48 p-2.5 bg-slate-900 text-white rounded-xl shadow-xl text-[11px] transition-all transform group-hover:translate-y-0 translate-y-1',
+                      isRTL && 'text-right'
+                    )}>
+                      <div className="flex items-center gap-1.5 mb-1 font-bold text-green-400">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
+                        {catName}
+                      </div>
+                      <div className="space-y-0.5 text-slate-300">
+                        <p>{isRTL ? 'ارزش کل:' : 'Total Value:'} <span className="text-white font-semibold">{formatCurrency(item.value)}</span></p>
+                        <p>{isRTL ? 'سهم از کل ریسک:' : 'Risk Share:'} <span className="text-white font-semibold">{pct}%</span></p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </Card>
 
         <Card padding="md">
@@ -168,21 +226,21 @@ export function AnalyticsPage() {
       <div className="grid lg:grid-cols-2 gap-4">
         <Card padding="md">
           <CardHeader><CardTitle>{an.lowStockIncidents}</CardTitle></CardHeader>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={lowStockTrend}>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={lowStockTrend} margin={{ top: 15, right: 30, left: 10, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" reversed={isRTL} />
               <YAxis tick={{ fontSize: 10 }} orientation={isRTL ? 'right' : 'left'} width={35} allowDecimals={false} />
               <Tooltip />
-              <Bar dataKey="value" fill="#f59e0b" radius={[2,2,0,0]} />
+              <Bar dataKey="value" fill="#f59e0b" radius={[3,3,0,0]} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
 
         <Card padding="md">
           <CardHeader><CardTitle>{an.avgResolutionTime}</CardTitle></CardHeader>
-          <ResponsiveContainer width="100%" height={180}>
-            <LineChart data={avgResolutionTime}>
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={avgResolutionTime} margin={{ top: 15, right: 30, left: 10, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" reversed={isRTL} />
               <YAxis tick={{ fontSize: 10 }} orientation={isRTL ? 'right' : 'left'} width={35} />

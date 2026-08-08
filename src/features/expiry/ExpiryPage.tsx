@@ -34,9 +34,10 @@ export function ExpiryPage() {
       .filter(b => b.status === 'active' || b.status === 'expired')
       .map(b => {
         const p = products.find(pr => pr.id === b.productId);
-        return { ...b, productName: p?.name ?? 'Unknown', productUnit: p?.unit ?? '', productCategory: p?.category ?? '' };
+        const name = p ? (isRTL && p.nameFa ? p.nameFa : p.name) : 'Unknown';
+        return { ...b, productName: name, productUnit: p?.unit ?? '', productCategory: p?.category ?? '' };
       }),
-    [batches]
+    [batches, isRTL]
   );
 
   const grouped = useMemo(() => {
@@ -73,9 +74,11 @@ export function ExpiryPage() {
     updateBatch(batch.id, { status: 'removed', quantity: 0 });
     addActivity({
       type: 'product-marked-removed',
-      title: `${batch.productName} ${ex.removedActivity}`,
-      description: `${isRTL ? 'دسته' : 'Batch'} ${batch.batchCode} ${ex.removedDesc}.`,
-      actorId: 'user-001', actorName: 'Sarah Mitchell',
+      title: isRTL ? `جمع‌آوری شد: ${batch.productName}` : `${batch.productName} marked as removed`,
+      titleFa: `جمع‌آوری شد: ${batch.productName}`,
+      description: isRTL ? `سری ${batch.batchCode} به علت انقضا/ضایعات از قفسه جمع‌آوری گردید.` : `Batch ${batch.batchCode} removed from shelf due to expiry/waste.`,
+      descriptionFa: `سری ${batch.batchCode} به علت انقضا/ضایعات از قفسه جمع‌آوری گردید.`,
+      actorId: 'user-001', actorName: isRTL ? 'سارا رضایی' : 'Sarah Mitchell',
       relatedEntityId: batch.productId, relatedEntityType: 'product', relatedEntityName: batch.productName,
     });
     setActionLoading(null);

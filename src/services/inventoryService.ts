@@ -60,6 +60,7 @@ export function computeAttentionItems(
 
   for (const item of items) {
     const { product, batches, totalQuantity, totalValue } = item;
+    const name = isFa && product.nameFa ? product.nameFa : product.name;
 
     // ---- Check each batch ----
     for (const batch of batches) {
@@ -73,7 +74,7 @@ export function computeAttentionItems(
           severity: 'critical',
           type: 'expired',
           productId: product.id,
-          productName: product.name,
+          productName: name,
           batchId: batch.id,
           quantity: batch.quantity,
           expiryDate: batch.expiryDate,
@@ -90,7 +91,7 @@ export function computeAttentionItems(
           severity: 'critical',
           type: 'expiring-soon',
           productId: product.id,
-          productName: product.name,
+          productName: name,
           batchId: batch.id,
           quantity: batch.quantity,
           expiryDate: batch.expiryDate,
@@ -110,7 +111,7 @@ export function computeAttentionItems(
           severity: days <= 1 ? 'critical' : 'high',
           type: 'expiring-soon',
           productId: product.id,
-          productName: product.name,
+          productName: name,
           batchId: batch.id,
           quantity: batch.quantity,
           expiryDate: batch.expiryDate,
@@ -125,7 +126,7 @@ export function computeAttentionItems(
           severity: 'medium',
           type: 'high-stock-expiry',
           productId: product.id,
-          productName: product.name,
+          productName: name,
           batchId: batch.id,
           quantity: batch.quantity,
           expiryDate: batch.expiryDate,
@@ -146,7 +147,7 @@ export function computeAttentionItems(
         severity: totalQuantity <= Math.floor(product.minStockLevel / 2) ? 'critical' : 'high',
         type: 'low-stock',
         productId: product.id,
-        productName: product.name,
+        productName: name,
         batchId: null,
         quantity: totalQuantity,
         expiryDate: null,

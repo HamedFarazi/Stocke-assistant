@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { AIActionCardData } from '@/services/aiService';
 
 export type AIProvider = 'ollama' | 'openai' | 'custom';
 
@@ -8,6 +9,8 @@ export interface AIMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: string;
+  actionCard?: AIActionCardData;
+  actionExecuted?: boolean;
 }
 
 export interface AIConfig {
@@ -25,6 +28,7 @@ interface AIState {
 
   setConfig: (config: Partial<AIConfig>) => void;
   addMessage: (msg: Omit<AIMessage, 'id' | 'timestamp'>) => AIMessage;
+  markActionExecuted: (msgId: string) => void;
   clearConversation: () => void;
   setPanelOpen: (open: boolean) => void;
   setLoading: (v: boolean) => void;
@@ -55,6 +59,12 @@ export const useAIStore = create<AIState>()(
         return full;
       },
 
+      markActionExecuted: (msgId) => {
+        set(s => ({
+          conversations: s.conversations.map(m => m.id === msgId ? { ...m, actionExecuted: true } : m),
+        }));
+      },
+
       clearConversation: () => set({ conversations: [] }),
       setPanelOpen: (open) => set({ panelOpen: open }),
       setLoading: (v) => set({ isLoading: v }),
@@ -65,3 +75,4 @@ export const useAIStore = create<AIState>()(
     }
   )
 );
+

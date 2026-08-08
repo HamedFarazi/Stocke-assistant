@@ -52,8 +52,12 @@ export function WorkflowTemplateDialog({ open, onClose, onSelect, onBlank }: Wor
                 <Zap size={16} className="text-green-700" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-slate-900">{workflow.name}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{workflow.description}</p>
+                <p className="text-sm font-medium text-slate-900">
+                  {isRTL && workflow.nameFa ? workflow.nameFa : workflow.name}
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {isRTL && workflow.descriptionFa ? workflow.descriptionFa : workflow.description}
+                </p>
                 <div className={cn('flex items-center gap-3 mt-1.5 text-[11px] text-slate-400', isRTL && 'flex-row-reverse')}>
                   <span>{workflow.nodes.filter(n => n.data.category === 'trigger').length} {wf.trigger}</span>
                   <span>{workflow.nodes.filter(n => n.data.category === 'condition').length} {wf.conditions}</span>

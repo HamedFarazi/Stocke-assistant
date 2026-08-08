@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { ProductBatch, Operation, Notification, ActivityEvent, Workflow, WorkflowExecution } from '@/types';
+import type { ProductBatch, Operation, Notification, ActivityEvent, Workflow, WorkflowExecution, PurchaseRequest, PurchaseRequestStatus } from '@/types';
 import { initialBatches } from '@/data/batches';
 import { initialOperations } from '@/data/operations';
 import { initialNotifications } from '@/data/notifications';
 import { initialActivities } from '@/data/activities';
 import { initialWorkflows } from '@/data/workflows';
+import { initialPurchaseRequests } from '@/data/purchaseRequests';
 import { generateId } from '@/lib/utils';
 
 interface AppState {
@@ -18,6 +19,7 @@ interface AppState {
   activities: ActivityEvent[];
   workflows: Workflow[];
   executions: WorkflowExecution[];
+  purchaseRequests: PurchaseRequest[];
 
   // Actions — Batches
   addBatch: (batch: Omit<ProductBatch, 'id' | 'createdAt' | 'updatedAt'>) => ProductBatch;
@@ -28,6 +30,11 @@ interface AppState {
   updateOperation: (id: string, updates: Partial<Operation>) => void;
   completeOperation: (id: string, completedBy: string, notes?: string) => void;
   dismissOperation: (id: string) => void;
+
+  // Actions — Purchase Requests
+  addPurchaseRequest: (pr: Omit<PurchaseRequest, 'id' | 'createdAt' | 'updatedAt'>) => PurchaseRequest;
+  updatePurchaseRequest: (id: string, updates: Partial<PurchaseRequest>) => void;
+  changePurchaseRequestStatus: (id: string, status: PurchaseRequestStatus) => void;
 
   // Actions — Notifications
   markNotificationRead: (id: string) => void;
@@ -63,6 +70,7 @@ export const useAppStore = create<AppState>()(
       activities: initialActivities,
       workflows: initialWorkflows,
       executions: [],
+      purchaseRequests: initialPurchaseRequests,
 
       addBatch: (batchData) => {
         const now = new Date().toISOString();
@@ -132,6 +140,45 @@ export const useAppStore = create<AppState>()(
         set((s) => ({
           operations: s.operations.map((o) =>
             o.id === id ? { ...o, status: 'dismissed', updatedAt: new Date().toISOString() } : o
+          ),
+        }));
+      },
+
+      addPurchaseRequest: (prData) => {
+        const now = new Date().toISOString();
+        const pr: PurchaseRequest = {
+          ...prData,
+          id: generateId('pr'),
+          createdAt: now,
+          updatedAt: now,
+        };
+        set((s) => ({ purchaseRequests: [pr, ...s.purchaseRequests] }));
+        get().addActivity({
+          type: 'purchase-request-created',
+          title: `Purchase request created for ${pr.productName}`,
+          description: `Requested ${pr.quantity} units from ${pr.supplierName}. Status: ${pr.status}.`,
+          actorId: get().currentUserId,
+          actorName: pr.requester,
+          relatedEntityId: pr.productId,
+          relatedEntityType: 'product',
+          relatedEntityName: pr.productName,
+        });
+        return pr;
+      },
+
+      updatePurchaseRequest: (id, updates) => {
+        set((s) => ({
+          purchaseRequests: s.purchaseRequests.map((pr) =>
+            pr.id === id ? { ...pr, ...updates, updatedAt: new Date().toISOString() } : pr
+          ),
+        }));
+      },
+
+      changePurchaseRequestStatus: (id, status) => {
+        const now = new Date().toISOString();
+        set((s) => ({
+          purchaseRequests: s.purchaseRequests.map((pr) =>
+            pr.id === id ? { ...pr, status, updatedAt: now } : pr
           ),
         }));
       },
@@ -226,7 +273,6 @@ export const useAppStore = create<AppState>()(
 
       addExecution: (e) => {
         set((s) => ({ executions: [e, ...s.executions] }));
-        // Update workflow execution count
         set((s) => ({
           workflows: s.workflows.map((w) =>
             w.id === e.workflowId
@@ -234,7 +280,6 @@ export const useAppStore = create<AppState>()(
               : w
           ),
         }));
-        // Add activity — keep description in English (gets localized at render time)
         const opsCount = e.createdOperationIds.length;
         get().addActivity({
           type: 'workflow-executed',
@@ -259,8 +304,10 @@ export const useAppStore = create<AppState>()(
         activities: state.activities,
         workflows: state.workflows,
         executions: state.executions,
+        purchaseRequests: state.purchaseRequests,
         currentStoreId: state.currentStoreId,
       }),
     }
   )
 );
+

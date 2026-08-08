@@ -235,26 +235,29 @@ export function StoreHealthPage() {
         ))}
       </div>
 
-      {/* Health tip */}
-      <Card padding="md" className="bg-green-50 border-green-200">
-        <div className={cn('flex items-start gap-3', isRTL && 'flex-row-reverse')}>
-          <ShieldCheck size={18} className="text-green-700 flex-shrink-0 mt-0.5" />
-          <div className={cn(isRTL && 'text-right')}>
-            <p className="text-sm font-semibold text-green-800">
-              {isFa ? 'پیشنهاد بهبود' : 'Improvement Suggestion'}
-            </p>
-            <p className="text-xs text-green-700 mt-1 leading-relaxed">
-              {scores.overall < 70
-                ? (isFa
-                  ? 'محصولات منقضی شده را فوراً از قفسه بردارید و یک گردش‌کار محافظت از انقضا فعال کنید تا امتیاز سلامت فروشگاه بهبود یابد.'
-                  : 'Remove expired products from shelves immediately and activate an Expiry Protection workflow to improve your health score.')
-                : (isFa
-                  ? 'عملکرد فروشگاه شما خوب است. برای بهبود بیشتر، گردش‌کارهای بیشتری فعال کنید.'
-                  : 'Your store is performing well. Activate more workflows to push your score higher.')}
-            </p>
+      {/* Health tip with rotating border glow */}
+      <div className="relative p-[1.5px] rounded-xl overflow-hidden shadow-lg shadow-green-500/10 group">
+        <div className="absolute inset-[-250%] animate-[spin_6s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0deg,#22c55e_120deg,#ffffff_180deg,#16a34a_240deg,transparent_360deg)] opacity-70" />
+        <div className={cn('relative z-10 rounded-[10px] bg-green-50/90 backdrop-blur-sm border border-green-200/80 p-4', isRTL && 'text-right')}>
+          <div className={cn('flex items-start gap-3', isRTL && 'flex-row-reverse')}>
+            <ShieldCheck size={20} className="text-green-700 flex-shrink-0 mt-0.5" />
+            <div className={cn('flex-1', isRTL && 'text-right')}>
+              <p className="text-sm font-bold text-green-800">
+                {isFa ? 'پیشنهاد بهبود' : 'Improvement Suggestion'}
+              </p>
+              <p className="text-xs text-green-700 mt-1 leading-relaxed">
+                {scores.overall < 70
+                  ? (isFa
+                    ? 'محصولات منقضی شده را فوراً از قفسه بردارید و یک گردش‌کار محافظت از انقضا فعال کنید تا امتیاز سلامت فروشگاه بهبود یابد.'
+                    : 'Remove expired products from shelves immediately and activate an Expiry Protection workflow to improve your health score.')
+                  : (isFa
+                    ? 'عملکرد فروشگاه شما خوب است. برای بهبود بیشتر، گردش‌کارهای بیشتری فعال کنید.'
+                    : 'Your store is performing well. Activate more workflows to push your score higher.')}
+              </p>
+            </div>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

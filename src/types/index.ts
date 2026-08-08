@@ -8,17 +8,34 @@ export type ID = string;
 export interface Store {
   id: ID;
   name: string;
+  nameFa?: string;
   address: string;
+  addressFa?: string;
   postcode: string;
+  postcodeFa?: string;
   manager: string;
+  managerFa?: string;
   phone: string;
+  phoneFa?: string;
   createdAt: string;
+}
+
+export interface User {
+  id: ID;
+  name: string;
+  nameFa?: string;
+  email: string;
+  role: 'admin' | 'manager' | 'staff';
+  roleFa?: string;
+  storeId: ID;
+  avatarUrl?: string;
 }
 
 // ---- Supplier ----
 export interface Supplier {
   id: ID;
   name: string;
+  nameFa?: string;
   contactEmail: string;
   contactPhone: string;
   category: ProductCategory;
@@ -42,6 +59,7 @@ export type ProductCategory =
 export interface Product {
   id: ID;
   name: string;
+  nameFa?: string;
   sku: string;
   category: ProductCategory;
   supplierId: ID;
@@ -103,7 +121,9 @@ export type OperationType =
 export interface Operation {
   id: ID;
   title: string;
+  titleFa?: string;
   description: string;
+  descriptionFa?: string;
   type: OperationType;
   priority: OperationPriority;
   status: OperationStatus;
@@ -113,6 +133,7 @@ export interface Operation {
   dueDate: string;
   sourceWorkflowId: ID | null;
   sourceWorkflowName: string | null;
+  sourceWorkflowNameFa?: string | null;
   createdAt: string;
   updatedAt: string;
   completedAt: string | null;
@@ -138,7 +159,9 @@ export type WorkflowStatus = 'active' | 'inactive' | 'draft';
 export interface Workflow {
   id: ID;
   name: string;
+  nameFa?: string;
   description: string;
+  descriptionFa?: string;
   status: WorkflowStatus;
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
@@ -249,7 +272,9 @@ export interface Notification {
   id: ID;
   type: NotificationType;
   title: string;
+  titleFa?: string;
   message: string;
+  messageFa?: string;
   isRead: boolean;
   relatedEntityId: ID | null;
   relatedEntityType: 'product' | 'operation' | 'workflow' | 'batch' | null;
@@ -276,7 +301,9 @@ export interface ActivityEvent {
   id: ID;
   type: ActivityEventType;
   title: string;
+  titleFa?: string;
   description: string;
+  descriptionFa?: string;
   actorId: ID;
   actorName: string;
   relatedEntityId: ID | null;
@@ -321,3 +348,24 @@ export interface AttentionItem {
   recommendedAction: string;
   actionLabel: string;
 }
+
+// ---- Purchase Request ----
+export type PurchaseRequestStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'ordered' | 'delivered';
+
+export interface PurchaseRequest {
+  id: ID;
+  productId: ID;
+  productName: string;
+  supplierId: ID;
+  supplierName: string;
+  quantity: number;
+  reason: string;
+  priority: OperationPriority;
+  expectedDelivery: string;
+  requester: string;
+  assignee: string | null;
+  status: PurchaseRequestStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+

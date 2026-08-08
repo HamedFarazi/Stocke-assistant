@@ -88,7 +88,7 @@ export function SupplierScorecard({ openAddSup, openEditSup, t, isRTL }: Supplie
                     <Truck size={15} className="text-slate-500" />
                   </div>
                   <div className={cn(isRTL && 'text-right')}>
-                    <p className="text-sm font-semibold text-slate-900">{sup.name}</p>
+                    <p className="text-sm font-semibold text-slate-900">{isFa && sup.nameFa ? sup.nameFa : sup.name}</p>
                     <p className="text-xs text-slate-500">{t.categories[sup.category as keyof typeof t.categories] ?? sup.category}</p>
                   </div>
                 </div>

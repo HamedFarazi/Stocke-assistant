@@ -4,6 +4,7 @@ export const products: Product[] = [
   {
     id: 'prod-001',
     name: 'Whole Milk',
+    nameFa: 'شیر کامل',
     sku: 'DAI-WM-001',
     category: 'Dairy',
     supplierId: 'sup-001',
@@ -18,6 +19,7 @@ export const products: Product[] = [
   {
     id: 'prod-002',
     name: 'Greek Yogurt',
+    nameFa: 'ماست یونانی',
     sku: 'DAI-GY-002',
     category: 'Dairy',
     supplierId: 'sup-001',
@@ -32,6 +34,7 @@ export const products: Product[] = [
   {
     id: 'prod-003',
     name: 'Mature Cheddar',
+    nameFa: 'پنیر چدار رسانده',
     sku: 'DAI-MC-003',
     category: 'Dairy',
     supplierId: 'sup-001',
@@ -46,6 +49,7 @@ export const products: Product[] = [
   {
     id: 'prod-004',
     name: 'Free Range Eggs',
+    nameFa: 'تخم‌مرغ محلی',
     sku: 'DAI-FRE-004',
     category: 'Dairy',
     supplierId: 'sup-001',
@@ -60,6 +64,7 @@ export const products: Product[] = [
   {
     id: 'prod-005',
     name: 'Sourdough Loaf',
+    nameFa: 'نان تست خمیرترش',
     sku: 'BAK-SD-005',
     category: 'Bakery',
     supplierId: 'sup-003',
@@ -74,6 +79,7 @@ export const products: Product[] = [
   {
     id: 'prod-006',
     name: 'Croissants',
+    nameFa: 'کرواسان تازه',
     sku: 'BAK-CR-006',
     category: 'Bakery',
     supplierId: 'sup-003',
@@ -88,6 +94,7 @@ export const products: Product[] = [
   {
     id: 'prod-007',
     name: 'Chicken Breast',
+    nameFa: 'سینه مرغ تازه',
     sku: 'MEA-CB-007',
     category: 'Meat & Poultry',
     supplierId: 'sup-005',
@@ -102,6 +109,7 @@ export const products: Product[] = [
   {
     id: 'prod-008',
     name: 'Beef Mince',
+    nameFa: 'گوشت چرخ‌کرده گوساله',
     sku: 'MEA-BM-008',
     category: 'Meat & Poultry',
     supplierId: 'sup-005',
@@ -116,6 +124,7 @@ export const products: Product[] = [
   {
     id: 'prod-009',
     name: 'Atlantic Salmon Fillet',
+    nameFa: 'فیله ماهی سالمون',
     sku: 'SEA-SF-009',
     category: 'Seafood',
     supplierId: 'sup-004',
@@ -130,6 +139,7 @@ export const products: Product[] = [
   {
     id: 'prod-010',
     name: 'Baby Spinach',
+    nameFa: 'اسفناج تازه',
     sku: 'PRO-BS-010',
     category: 'Produce',
     supplierId: 'sup-002',
@@ -144,6 +154,7 @@ export const products: Product[] = [
   {
     id: 'prod-011',
     name: 'Strawberries',
+    nameFa: 'توت‌فرنگی تازه',
     sku: 'PRO-STR-011',
     category: 'Produce',
     supplierId: 'sup-002',
@@ -158,6 +169,7 @@ export const products: Product[] = [
   {
     id: 'prod-012',
     name: 'Smoked Salmon',
+    nameFa: 'سالمون دودی',
     sku: 'DEL-SS-012',
     category: 'Deli',
     supplierId: 'sup-006',
@@ -172,6 +184,7 @@ export const products: Product[] = [
   {
     id: 'prod-013',
     name: 'Cooked Ham',
+    nameFa: 'کالباس ژامبون',
     sku: 'DEL-CH-013',
     category: 'Deli',
     supplierId: 'sup-006',
@@ -186,6 +199,7 @@ export const products: Product[] = [
   {
     id: 'prod-014',
     name: 'Orange Juice',
+    nameFa: 'آب‌میوه پرتقال',
     sku: 'BEV-OJ-014',
     category: 'Beverages',
     supplierId: 'sup-002',
@@ -200,6 +214,7 @@ export const products: Product[] = [
   {
     id: 'prod-015',
     name: 'Butter',
+    nameFa: 'کره پاستوریزه',
     sku: 'DAI-BU-015',
     category: 'Dairy',
     supplierId: 'sup-001',

@@ -150,7 +150,7 @@ Respond with ONLY a JSON object (no markdown) with these fields:
         };
         const userMsg = { id: '', role: 'user' as const, content: prompt, timestamp: '' };
         const reply = await sendAIMessage(config, [systemMsg, userMsg]);
-        const jsonMatch = reply.match(/\{[\s\S]*\}/);
+        const jsonMatch = reply.text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           JSON.parse(jsonMatch[0]); // validate
         }

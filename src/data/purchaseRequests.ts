@@ -1,0 +1,55 @@
+import type { PurchaseRequest } from '@/types';
+import { subDays, addDays } from 'date-fns';
+
+const today = new Date();
+
+export const initialPurchaseRequests: PurchaseRequest[] = [
+  {
+    id: 'pr-001',
+    productId: 'prod-004',
+    productName: 'Free Range Eggs (6 pack)',
+    supplierId: 'sup-001',
+    supplierName: 'Meadow Fresh Dairy',
+    quantity: 50,
+    reason: 'Low stock alert (3 units remaining, min stock 12)',
+    priority: 'high',
+    expectedDelivery: addDays(today, 2).toISOString(),
+    requester: 'Emma Wilson',
+    assignee: 'Marcus Chen',
+    status: 'pending',
+    createdAt: subDays(today, 1).toISOString(),
+    updatedAt: subDays(today, 1).toISOString(),
+  },
+  {
+    id: 'pr-002',
+    productId: 'prod-014',
+    productName: 'Orange Juice (1L)',
+    supplierId: 'sup-002',
+    supplierName: 'Greenfield Farms',
+    quantity: 40,
+    reason: 'High demand and low stock level',
+    priority: 'critical',
+    expectedDelivery: addDays(today, 1).toISOString(),
+    requester: 'Emma Wilson',
+    assignee: 'Emma Wilson',
+    status: 'approved',
+    createdAt: subDays(today, 2).toISOString(),
+    updatedAt: subDays(today, 1).toISOString(),
+  },
+  {
+    id: 'pr-003',
+    productId: 'prod-007',
+    productName: 'Organic Chicken Breast (500g)',
+    supplierId: 'sup-005',
+    supplierName: 'Prime Cut Meats',
+    quantity: 30,
+    reason: 'Upcoming weekend promotion restock',
+    priority: 'medium',
+    expectedDelivery: addDays(today, 4).toISOString(),
+    requester: 'Sophie Blake',
+    assignee: null,
+    status: 'draft',
+    createdAt: subDays(today, 3).toISOString(),
+    updatedAt: subDays(today, 3).toISOString(),
+  },
+];

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useAppStore } from '@/stores/appStore';
 import { products } from '@/data/products';
+import { users } from '@/data/users';
 import { useOperations } from '@/hooks/useOperations';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLocale } from '@/hooks/useLocale';
@@ -13,7 +14,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Input, Select } from '@/components/ui/Input';
 import {
   Plus, ClipboardList, LayoutGrid, List, Search,
-  CheckCircle2, Clock, ChevronRight, AlertCircle, Zap,
+  CheckCircle2, Clock, ChevronRight, AlertCircle, Zap, User,
 } from 'lucide-react';
 import { formatDistanceToNow, isPast } from 'date-fns';
 import type { Operation, OperationStatus } from '@/types';
@@ -53,7 +54,7 @@ export function OperationsPage() {
     let ops = [...operations];
     if (search) {
       const q = search.toLowerCase();
-      ops = ops.filter(o => o.title.toLowerCase().includes(q) || o.description.toLowerCase().includes(q));
+      ops = ops.filter(o => o.title.toLowerCase().includes(q) || o.description.toLowerCase().includes(q) || (o.titleFa && o.titleFa.toLowerCase().includes(q)));
     }
     if (statusFilter)   ops = ops.filter(o => o.status === statusFilter);
     if (priorityFilter) ops = ops.filter(o => o.priority === priorityFilter);
@@ -98,7 +99,7 @@ export function OperationsPage() {
           <ExportMenu
             onExportCSV={() => exportCSV(
               filtered.map(o => ({
-                [op.operationTitle]: o.title,
+                [op.operationTitle]: isRTL && o.titleFa ? o.titleFa : o.title,
                 [op.operationType]: o.type,
                 [t.common.priority]: o.priority,
                 [t.common.status]: o.status,
@@ -111,7 +112,7 @@ export function OperationsPage() {
               isRTL ? 'گزارش عملیات‌ها' : 'Operations Report',
               `<h1>${isRTL ? 'عملیات‌ها' : 'Operations'}</h1><table>
                <tr><th>${op.operationTitle}</th><th>${t.common.priority}</th><th>${t.common.status}</th><th>${op.dueDate}</th></tr>
-               ${filtered.map(o=>`<tr><td>${o.title}</td><td>${o.priority}</td><td>${o.status}</td><td>${new Date(o.dueDate).toLocaleDateString()}</td></tr>`).join('')}
+               ${filtered.map(o=>`<tr><td>${isRTL && o.titleFa ? o.titleFa : o.title}</td><td>${o.priority}</td><td>${o.status}</td><td>${new Date(o.dueDate).toLocaleDateString()}</td></tr>`).join('')}
                </table>`,
               isRTL
             )}
@@ -197,7 +198,14 @@ export function OperationsPage() {
             <div>
               {filtered.map((o, idx) => {
                 const product = products.find(p => p.id === o.productId);
+                const assignedUser = users.find(u => u.id === o.assignedUserId);
                 const isOverdue = (o.status === 'pending' || o.status === 'in-progress') && isPast(new Date(o.dueDate));
+                const displayTitle = isRTL && o.titleFa ? o.titleFa : o.title;
+                const displayDesc = isRTL && o.descriptionFa ? o.descriptionFa : o.description;
+                const displayProductName = product ? (isRTL && product.nameFa ? product.nameFa : product.name) : null;
+                const displayWorkflowName = isRTL && o.sourceWorkflowNameFa ? o.sourceWorkflowNameFa : o.sourceWorkflowName;
+                const displayAssignee = assignedUser ? (isRTL && assignedUser.nameFa ? assignedUser.nameFa : assignedUser.name) : (isRTL ? 'تعیین نشده' : 'Unassigned');
+
                 return (
                   <div key={o.id}
                     className={cn('flex items-start gap-3 px-4 py-3.5 hover:bg-slate-50/50 cursor-pointer transition-colors group',
@@ -207,7 +215,7 @@ export function OperationsPage() {
                       o.priority === 'critical' ? 'bg-red-500' : o.priority === 'high' ? 'bg-orange-400' : o.priority === 'medium' ? 'bg-amber-400' : 'bg-slate-200')} />
                     <div className={cn('flex-1 min-w-0', isRTL && 'text-right')}>
                       <div className={cn('flex items-center gap-2 flex-wrap', isRTL && 'flex-row-reverse')}>
-                        <span className="text-sm font-medium text-slate-900 group-hover:text-green-800 transition-colors">{o.title}</span>
+                        <span className="text-sm font-medium text-slate-900 group-hover:text-green-800 transition-colors">{displayTitle}</span>
                         {isOverdue && (
                           <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-red-700 bg-red-100 rounded-full px-1.5 py-0.5">
                             <AlertCircle size={9} /> {t.common.overdue}
@@ -220,12 +228,19 @@ export function OperationsPage() {
                           {statusLabels[o.status]}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{o.description}</p>
-                      <div className={cn('flex items-center gap-3 mt-1 text-[11px] text-slate-400 flex-wrap', isRTL && 'flex-row-reverse')}>
-                        {product && <span>{product.name}</span>}
-                        {o.sourceWorkflowName && (
+                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{displayDesc}</p>
+                      <div className={cn('flex items-center gap-3 mt-1.5 text-[11px] text-slate-400 flex-wrap', isRTL && 'flex-row-reverse')}>
+                        {displayProductName && <span className="font-medium text-slate-600">{displayProductName}</span>}
+                        
+                        {/* Assigned Person Badge */}
+                        <span className={cn('inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full', isRTL && 'flex-row-reverse')}>
+                          <User size={10} className="text-slate-500" />
+                          <span>{isRTL ? 'مسئول:' : 'Assigned:'} {displayAssignee}</span>
+                        </span>
+
+                        {displayWorkflowName && (
                           <span className={cn('flex items-center gap-0.5', isRTL && 'flex-row-reverse')}>
-                            <Zap size={9} />{o.sourceWorkflowName}
+                            <Zap size={9} />{displayWorkflowName}
                           </span>
                         )}
                         <span className={cn('flex items-center gap-0.5', isOverdue && 'text-red-500 font-medium', isRTL && 'flex-row-reverse')}>
@@ -257,13 +272,22 @@ function KanbanCard({ op, onClick, priorityLabel, formatDate, isRTL }: {
   formatDate: (d: string) => string; isRTL: boolean;
 }) {
   const product = products.find(p => p.id === op.productId);
+  const assignedUser = users.find(u => u.id === op.assignedUserId);
   const isOverdue = (op.status === 'pending' || op.status === 'in-progress') && isPast(new Date(op.dueDate));
+  const displayTitle = isRTL && op.titleFa ? op.titleFa : op.title;
+  const displayProductName = product ? (isRTL && product.nameFa ? product.nameFa : product.name) : null;
+  const displayAssignee = assignedUser ? (isRTL && assignedUser.nameFa ? assignedUser.nameFa : assignedUser.name) : (isRTL ? 'تعیین نشده' : 'Unassigned');
+
   return (
     <button onClick={onClick}
       className={cn('w-full text-left bg-white border rounded-md p-3 hover:border-slate-300 transition-all shadow-sm hover:shadow',
         isOverdue ? 'border-red-200 bg-red-50/50' : 'border-slate-200', isRTL && 'text-right')}>
-      <p className="text-xs font-medium text-slate-900 line-clamp-2 leading-snug">{op.title}</p>
-      {product && <p className="text-[11px] text-slate-400 mt-1">{product.name}</p>}
+      <p className="text-xs font-medium text-slate-900 line-clamp-2 leading-snug">{displayTitle}</p>
+      {displayProductName && <p className="text-[11px] text-slate-500 font-medium mt-1">{displayProductName}</p>}
+      <div className={cn('flex items-center gap-1 text-[10px] text-slate-500 mt-1', isRTL && 'flex-row-reverse')}>
+        <User size={10} className="text-slate-400" />
+        <span>{displayAssignee}</span>
+      </div>
       <div className={cn('flex items-center justify-between mt-2', isRTL && 'flex-row-reverse')}>
         <span className={cn('inline-flex text-[10px] font-semibold rounded-full px-1.5 py-0.5', getPriorityColor(op.priority))}>
           {priorityLabel}
@@ -275,3 +299,4 @@ function KanbanCard({ op, onClick, priorityLabel, formatDate, isRTL }: {
     </button>
   );
 }
+

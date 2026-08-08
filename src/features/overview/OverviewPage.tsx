@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import { useAppStore } from '@/stores/appStore';
+import { useSimulationStore } from '@/stores/simulationStore';
+import { generateSimulationEvents } from '@/services/simulationService';
+import { SimulationBanner } from './SimulationBanner';
+import { SimulationSummaryModal } from './SimulationSummaryModal';
 import { useInventory } from '@/hooks/useInventory';
 import { useOperations } from '@/hooks/useOperations';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -12,12 +16,15 @@ import { Button } from '@/components/ui/Button';
 import {
   AlertTriangle, Package, TrendingDown, ClipboardList, GitBranch,
   Layers, ArrowRight, CheckCircle2, Activity, ChevronRight,
-  Zap, Clock, AlertCircle,
-} from 'lucide-react';import { formatDistanceToNow, format } from 'date-fns';
+  Zap, Clock, AlertCircle, Play, X,
+} from 'lucide-react';
+import { formatDistanceToNow, format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { CreateOperationDialog } from '@/features/operations/CreateOperationDialog';
 import { SmartRecommendations } from '@/components/ui/SmartRecommendations';
 import type { AttentionItem } from '@/types';
+
+import { useDemoStore } from '@/stores/demoStore';
 
 interface OverviewPageProps {
   onNavigate: (section: string) => void;
@@ -32,12 +39,21 @@ const severityConfig = {
 
 export function OverviewPage({ onNavigate }: OverviewPageProps) {
   const { workflows, activities, executions } = useAppStore();
+  const { isRunning, startSimulation } = useSimulationStore();
+  const { isDemoMode } = useDemoStore();
   const { attentionItems, metrics } = useInventory();
   const { metrics: opMetrics } = useOperations();
-  const { t, isRTL } = useTranslation();
+  const { t, isRTL, language } = useTranslation();
   const { formatCurrencyCompact } = useCurrency();
-  const { formatNumber, formatDate } = useLocale();
+  const { formatNumber, formatDate, formatRelativeTime } = useLocale();
   const [createOpItem, setCreateOpItem] = useState<AttentionItem | null>(null);
+  const [demoTipDismissed, setDemoTipDismissed] = useState(false);
+  const isFa = language === 'fa';
+
+  function handleStartSim() {
+    const events = generateSimulationEvents(isFa);
+    startSimulation(events);
+  }
 
   const ov = t.overview;
   const activeWorkflows = workflows.filter(w => w.status === 'active');
@@ -50,7 +66,6 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
     {
       label: ov.totalInventoryValue,
       value: formatCurrencyCompact(metrics.totalValue),
-      // icon: <Layers size={17} />,
       iconBg: 'bg-slate-100', iconColor: 'text-slate-600',
       sub: `${formatNumber(metrics.activeBatchCount)} ${ov.activeBatches}`,
     },
@@ -102,25 +117,83 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className={cn('flex items-start justify-between', isRTL && 'flex-row-reverse')}>
+      <div className={cn('flex flex-col sm:flex-row sm:items-center justify-between gap-4', isRTL && 'sm:flex-row-reverse')}>
+
         <div className={cn(isRTL && 'text-right')}>
           <h1 className="text-xl font-semibold text-slate-900">{ov.title}</h1>
           <p className="text-sm text-slate-500 mt-0.5">
             {isRTL ? formatDate(new Date().toISOString()) : format(new Date(), 'EEEE, d MMMM yyyy')}
           </p>
         </div>
-        {metrics.valueAtRisk > 0 && (
-          <div className={cn(
-            'hidden sm:flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2',
-            isRTL && 'flex-row-reverse'
-          )}>
-            <AlertTriangle size={14} className="text-red-500 flex-shrink-0" />
-            <span className="text-xs font-medium text-red-700">
-              {formatCurrencyCompact(metrics.valueAtRisk)} {ov.atRisk}
-            </span>
+
+        <div className={cn('flex items-center gap-3', isRTL && 'flex-row-reverse')}>
+          <div className="relative">
+            <Button
+              leftIcon={<Play size={15} />}
+              onClick={() => {
+                setDemoTipDismissed(true);
+                handleStartSim();
+              }}
+              disabled={isRunning}
+              className="bg-green-700 hover:bg-green-800 text-white shadow-md font-semibold text-xs relative z-10"
+            >
+              {isRunning ? (isFa ? 'شبیه‌ساز در حال اجرا…' : 'Simulation Running…') : (isFa ? 'اجرای شبیه‌ساز زنده فروشگاه' : 'Run Store Simulation')}
+            </Button>
+
+            {/* Onboarding Tooltip for Demo Mode */}
+            {isDemoMode && !isRunning && !demoTipDismissed && (
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                className={cn(
+                  'absolute top-12 z-30 w-72 bg-slate-900 text-white p-3 rounded-xl shadow-2xl border border-green-500/50 shadow-green-500/20',
+                  isRTL ? 'right-0 text-right' : 'left-0 text-left'
+                )}
+              >
+                <div className={cn('flex items-start gap-2.5', isRTL && 'flex-row-reverse')}>
+                  <div className="w-7 h-7 rounded-lg bg-green-600 flex items-center justify-center flex-shrink-0 animate-bounce">
+                    <Play size={13} className="fill-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-green-400">
+                      {isFa ? 'راهنمای شروع دمو' : 'Start Demo Simulation'}
+                    </p>
+                    <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                      {isFa
+                        ? 'برای مشاهده شبیه‌سازی زنده سفارش‌ها، خریدهای مشتریان و هشدارهای انقضا روی دکمه بالا کلیک کنید!'
+                        : 'Click the button above to start live store purchases, expiry alerts, and automated workflow events!'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setDemoTipDismissed(true)}
+                    className="text-slate-400 hover:text-white p-0.5 flex-shrink-0"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+                {/* Arrow pointing up */}
+                <div className={cn(
+                  'absolute -top-1.5 w-3 h-3 bg-slate-900 border-t border-l border-green-500/50 rotate-45',
+                  isRTL ? 'right-6' : 'left-6'
+                )} />
+              </motion.div>
+            )}
           </div>
-        )}
+
+          {metrics.valueAtRisk > 0 && (
+            <div className={cn(
+              'hidden sm:flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2',
+              isRTL && 'flex-row-reverse'
+            )}>
+              <AlertTriangle size={14} className="text-red-500 flex-shrink-0" />
+              <span className="text-xs font-medium text-red-700">
+                {formatCurrencyCompact(metrics.valueAtRisk)} {ov.atRisk}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
+
 
       {/* Metric cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
@@ -270,18 +343,34 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
               </button>
             </div>
             <Card padding="none">
-              {activities.slice(0, 7).map((event, idx) => (
-                <div key={event.id} className={cn('flex items-start gap-3 px-4 py-2.5', idx !== 0 && 'border-t border-slate-50', isRTL && 'flex-row-reverse')}>
-                  <ActivityIcon type={event.type} />
-                  <div className={cn('flex-1 min-w-0', isRTL && 'text-right')}>
-                    <p className="text-xs font-medium text-slate-800 leading-snug line-clamp-1">{event.title}</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })}
-                      {event.actorName !== 'System' && ` · ${event.actorName}`}
-                    </p>
+              {activities.slice(0, 7).map((event, idx) => {
+                const titleText = isFa
+                  ? (event.titleFa ?? (
+                      event.title.includes('Expiry Protection workflow completed') ? 'اجرای گردش‌کار محافظت از انقضا تکمیل شد' :
+                      event.title.includes('Operation created: Review Greek Yogurt') ? 'عملیات ایجاد شد: بررسی تخفیف ماست یونانی' :
+                      event.title.includes('Low Stock Protection workflow triggered') ? 'گردش‌کار محافظت از موجودی کم فعال شد' :
+                      event.title.includes('Operation assigned to store staff') ? 'عملیات به کارکنان فروشگاه تخصیص یافت' :
+                      event.title.includes('Baby Spinach marked as expired') ? 'اسفناج تازه منقضی شده علامت‌گذاری شد' :
+                      event.title.includes('Operation completed: Remove expired Sourdough Loaf') ? 'عملیات تکمیل شد: جمع‌آوری نان تست خمیرترش منقضی‌شده' :
+                      event.title.includes('Expiry Protection workflow activated') ? 'گردش‌کار محافظت از انقضا فعال‌سازی شد' : event.title
+                    ))
+                  : event.title;
+
+                return (
+                  <div key={event.id} className={cn('flex items-start gap-3 px-4 py-2.5', idx !== 0 && 'border-t border-slate-50', isRTL && 'flex-row-reverse')}>
+                    <ActivityIcon type={event.type} />
+                    <div className={cn('flex-1 min-w-0', isRTL && 'text-right')}>
+                      <p className="text-xs font-medium text-slate-800 leading-snug line-clamp-1">
+                        {titleText}
+                      </p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        {formatRelativeTime(event.createdAt)}
+                        {event.actorName !== 'System' && ` · ${isFa ? (event.actorName === 'Marcus Chen' ? 'نیما طاهری' : event.actorName === 'Emma Wilson' ? 'سارا رضایی' : event.actorName === 'Sophie Blake' ? 'مهسا ابراهیمی' : event.actorName) : event.actorName}`}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <div className={cn('px-4 py-2.5 border-t border-slate-100')}>
                 <button onClick={() => onNavigate('activity')} className={cn('text-xs text-green-700 hover:underline flex items-center gap-1', isRTL && 'flex-row-reverse')}>
                   {ov.fullActivityLog} {isRTL ? <ArrowRight size={11} className="rotate-180" /> : <ArrowRight size={11} />}
@@ -308,26 +397,39 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
                   </button>
                 </div>
               ) : (
-                activeWorkflows.map((wf, idx) => (
-                  <div key={wf.id} className={cn('flex items-center gap-3 px-4 py-2.5', idx !== 0 && 'border-t border-slate-50', isRTL && 'flex-row-reverse')}>
-                    <div className="w-6 h-6 rounded-md bg-green-100 flex items-center justify-center flex-shrink-0">
-                      <Zap size={11} className="text-green-700" />
-                    </div>
-                    <div className={cn('flex-1 min-w-0', isRTL && 'text-right')}>
-                      <p className="text-xs font-medium text-slate-800 truncate">{wf.name}</p>
-                      <div className={cn('flex items-center gap-2 text-[11px] text-slate-400 mt-0.5', isRTL && 'flex-row-reverse')}>
-                        <span>{formatNumber(wf.executionCount)} {ov.runs}</span>
-                        {wf.lastExecutedAt && (
-                          <span className={cn('flex items-center gap-0.5', isRTL && 'flex-row-reverse')}>
-                            <Clock size={9} />
-                            {formatDistanceToNow(new Date(wf.lastExecutedAt), { addSuffix: true })}
-                          </span>
-                        )}
+                activeWorkflows.map((wf, idx) => {
+                  const wfName = isFa
+                    ? (wf.nameFa ?? (
+                        wf.name === 'Expiry Protection' ? 'محافظت از انقضا' :
+                        wf.name === 'Expired Product Protection' ? 'محافظت از کالاهای منقضی‌شده' :
+                        wf.name === 'Low Stock Protection' ? 'محافظت از موجودی کم' :
+                        wf.name === 'High Risk Expiry' ? 'ریسک انقضای موجودی بالا' : wf.name
+                      ))
+                    : wf.name;
+
+                  return (
+                    <div key={wf.id} className={cn('flex items-center gap-3 px-4 py-2.5', idx !== 0 && 'border-t border-slate-50', isRTL && 'flex-row-reverse')}>
+                      <div className="w-6 h-6 rounded-md bg-green-100 flex items-center justify-center flex-shrink-0">
+                        <Zap size={11} className="text-green-700" />
                       </div>
+                      <div className={cn('flex-1 min-w-0', isRTL && 'text-right')}>
+                        <p className="text-xs font-medium text-slate-800 truncate">
+                          {wfName}
+                        </p>
+                        <div className={cn('flex items-center gap-2 text-[11px] text-slate-400 mt-0.5', isRTL && 'flex-row-reverse')}>
+                          <span>{formatNumber(wf.executionCount)} {ov.runs}</span>
+                          {wf.lastExecutedAt && (
+                            <span className={cn('flex items-center gap-0.5', isRTL && 'flex-row-reverse')}>
+                              <Clock size={9} />
+                              {formatRelativeTime(wf.lastExecutedAt)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
                     </div>
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
-                  </div>
-                ))
+                  );
+                })
               )}
             </Card>
           </div>
@@ -341,6 +443,7 @@ export function OverviewPage({ onNavigate }: OverviewPageProps) {
     </div>
   );
 }
+
 
 function ActivityIcon({ type }: { type: string }) {
   const map: Record<string, { icon: React.ReactNode; bg: string; color: string }> = {

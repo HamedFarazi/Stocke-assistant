@@ -98,12 +98,16 @@ export function WorkflowsPage() {
                 <div className={cn('w-2 h-2 rounded-full flex-shrink-0', w.status === 'active' ? 'bg-green-500 animate-pulse' : 'bg-slate-300')} />
                 <div className={cn('flex-1 min-w-0', isRTL && 'text-right')}>
                   <div className={cn('flex items-center gap-2 flex-wrap', isRTL && 'flex-row-reverse')}>
-                    <span className="text-sm font-medium text-slate-900">{w.name}</span>
+                    <span className="text-sm font-medium text-slate-900">
+                      {isRTL && w.nameFa ? w.nameFa : w.name}
+                    </span>
                     <span className={cn('inline-flex items-center text-xs font-medium rounded-full px-2 py-0.5', getStatusColor(w.status))}>
                       {t.common[w.status as keyof typeof t.common] as string ?? w.status}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{w.description}</p>
+                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
+                    {isRTL && w.descriptionFa ? w.descriptionFa : w.description}
+                  </p>
                   <div className={cn('flex items-center gap-3 mt-1 text-[11px] text-slate-400', isRTL && 'flex-row-reverse')}>
                     <span className={cn('flex items-center gap-0.5', isRTL && 'flex-row-reverse')}>
                       <Zap size={10} /> {formatNumber(w.executionCount)} {wf.executions}

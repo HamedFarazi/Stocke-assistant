@@ -34,9 +34,68 @@ function getNavTarget(entityType: string | null): string {
   }
 }
 
+function toPersianDigits(n: string | number): string {
+  return String(n).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[parseInt(d)]);
+}
+
+function localiseTimeAgo(dateStr: string, isFa: boolean): string {
+  const date = new Date(dateStr);
+  if (!isFa) {
+    return formatDistanceToNow(date, { addSuffix: true });
+  }
+
+  const now = new Date();
+  const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+
+  if (diffMin < 1) return 'چند لحظه پیش';
+  if (diffMin < 60) return `${toPersianDigits(diffMin)} دقیقه پیش`;
+  if (diffHour === 1) return 'حدود ۱ ساعت پیش';
+  if (diffHour < 24) return `حدود ${toPersianDigits(diffHour)} ساعت پیش`;
+  if (diffDay === 1) return 'دیروز';
+  return `${toPersianDigits(diffDay)} روز پیش`;
+}
+
+function localiseNotifText(text: string, isFa: boolean): string {
+  if (!isFa || !text) return text;
+  return text
+    // Titles
+    .replace(/Croissants expire today/gi, 'کرواسان امروز منقضی می‌شود')
+    .replace(/Beef Mince expires tomorrow/gi, 'گوشت چرخ‌کرده فردا منقضی می‌شود')
+    .replace(/Expiry Protection workflow triggered/gi, 'گردش‌کار محافظت از انقضا فعال شد')
+    .replace(/New operation assigned to you/gi, 'عملیات جدید به شما تخصیص یافت')
+    .replace(/Smart operation created/gi, 'عملیات هوشمند ایجاد شد')
+
+    // Products
+    .replace(/Free Range Eggs/gi, 'تخم‌مرغ محلی')
+    .replace(/Orange Juice/gi, 'آب‌میوه پرتقال')
+    .replace(/Mature Cheddar/gi, 'پنیر چدار')
+    .replace(/Croissants/gi, 'نان کرواسان')
+    .replace(/Beef Mince/gi, 'گوشت چرخ‌کرده')
+    .replace(/Greek Yogurt/gi, 'ماست یونانی')
+    .replace(/Whole Milk/gi, 'شیر کامل')
+
+    // Descriptions & Messages
+    .replace(/Discount review & auto-workflow/gi, 'بررسی تخفیف و گردش‌کار خودکار')
+    .replace(/Product status stable/gi, 'وضعیت محصول پایدار است')
+    .replace(/Batch CR-F101 \(4 units\) expires today\. Immediate action required\./gi, 'دسته CR-F101 (۴ عدد) امروز منقضی می‌شود. نیازمند اقدام فوری.')
+    .replace(/Batch CR-D101 \(6 units\) expires today\. Immediate action required\./gi, 'دسته CR-D101 (۶ عدد) امروز منقضی می‌شود. نیازمند اقدام فوری.')
+    .replace(/Batch BM-H101 \(6 units\) expires in 1 day\. Estimated value at risk: £25\.20\./gi, 'دسته BM-H101 (۶ عدد) تا ۱ روز دیگر منقضی می‌شود. ارزش در معرض خطر: ۹۵۰,۰۰۰ تومان.')
+    .replace(/Batch BM-D101 \(6 units\) expires in 1 day\. Estimated value at risk: £25\.20\./gi, 'دسته BM-D101 (۶ عدد) تا ۱ روز دیگر منقضی می‌شود. ارزش در معرض خطر: ۹۵۰,۰۰۰ تومان.')
+    .replace(/Workflow ran for Greek Yogurt batch GY-B101\. Operation created and manager notified\./gi, 'گردش‌کار برای دسته ماست یونانی GY-B101 اجرا شد. عملیات ایجاد گردید و به مدیر اطلاع داده شد.')
+    .replace(/Workflow ran for Greek Yogurt batch GY-D101\. Operation created and manager notified\./gi, 'گردش‌کار برای دسته ماست یونانی GY-D101 اجرا شد. عملیات ایجاد گردید و به مدیر اطلاع داده شد.')
+    .replace(/Review Greek Yogurt for discount — due tomorrow\./gi, 'بررسی تخفیف ماست یونانی — مهلت تا فردا.')
+    .replace(/units/gi, 'عدد')
+    .replace(/expires today/gi, 'امروز منقضی می‌شود')
+    .replace(/expires tomorrow/gi, 'فردا منقضی می‌شود');
+}
+
 export function NotificationPanel({ open, onClose, onNavigate }: NotificationPanelProps) {
   const { notifications, markNotificationRead, markAllNotificationsRead } = useAppStore();
   const { t, isRTL } = useTranslation();
+  const isFa = isRTL;
   const unread = notifications.filter(n => !n.isRead).length;
 
   return (
@@ -104,12 +163,14 @@ export function NotificationPanel({ open, onClose, onNavigate }: NotificationPan
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={cn('text-xs font-medium text-slate-900 truncate', !notif.isRead && 'font-semibold')}>
-                        {notif.title}
+                        {isFa && notif.titleFa ? notif.titleFa : localiseNotifText(notif.title, isFa)}
                       </p>
-                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{notif.message}</p>
+                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                        {isFa && notif.messageFa ? notif.messageFa : localiseNotifText(notif.message, isFa)}
+                      </p>
                       <div className={cn('flex items-center gap-1 mt-1 text-[10px] text-slate-400', isRTL && 'flex-row-reverse')}>
                         <Clock size={10} />
-                        {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true })}
+                        {localiseTimeAgo(notif.createdAt, isFa)}
                       </div>
                     </div>
                     {!notif.isRead && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1 flex-shrink-0" />}

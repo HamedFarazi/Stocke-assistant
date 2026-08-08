@@ -168,19 +168,22 @@ export function ActivityPage() {
                       <div className={cn('flex-1 min-w-0', isRTL && 'text-right')}>
                         <div className={cn('flex items-start justify-between gap-2', isRTL && 'flex-row-reverse')}>
                           <p className="text-sm font-medium text-slate-900 leading-snug">
-                            {localise(event.title, isFa)}
+                            {isFa && event.titleFa ? event.titleFa : localise(event.title, isFa)}
                           </p>
                           <Badge variant={cfg.badgeVariant} size="sm" className="flex-shrink-0">{cfg.label}</Badge>
                         </div>
                         <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                          {localise(event.description, isFa)}
+                          {isFa && event.descriptionFa ? event.descriptionFa : localise(event.description, isFa)}
                         </p>
                         <div className={cn('flex items-center gap-2 mt-1.5 text-[11px] text-slate-400', isRTL && 'flex-row-reverse')}>
                           <span>{format(new Date(event.createdAt), 'HH:mm')}</span>
                           <span>·</span>
                           <span>{formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })}</span>
-                          {event.actorName && event.actorName !== 'System' && (
-                            <><span>·</span><span className="font-medium text-slate-600">{event.actorName}</span></>
+                          {event.actorName !== 'System' && (
+                            <>
+                              <span>·</span>
+                              <span>{isFa ? (event.actorName === 'Marcus Chen' ? 'نیما طاهری' : event.actorName === 'Emma Wilson' ? 'سارا رضایی' : event.actorName === 'Sophie Blake' ? 'مهسا ابراهیمی' : event.actorName) : event.actorName}</span>
+                            </>
                           )}
                           {event.actorName === 'System' && (
                             <><span>·</span>

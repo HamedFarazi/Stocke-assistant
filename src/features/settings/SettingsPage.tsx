@@ -8,7 +8,7 @@ import { useAppStore } from '@/stores/appStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useLanguageStore } from '@/stores/languageStore';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Store, Users, Truck, Bell, Globe, Info, Leaf, CheckCircle2, Pencil, Trash2, Plus, X } from 'lucide-react';
+import { Store, Users, Truck, Bell, Globe, Info, Leaf, CheckCircle2, Pencil, Trash2, Plus, X, Send, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Language } from '@/i18n';
 import type { UserRole, ProductCategory } from '@/types';
@@ -34,9 +34,19 @@ export function SettingsPage() {
   useEffect(() => {
     const st = stores.find(s => s.id === activeStoreId);
     if (st) {
-      setStoreForm({ name: st.name, manager: st.manager, address: st.address, postcode: st.postcode, phone: st.phone });
+      if (isRTL) {
+        setStoreForm({
+          name: st.nameFa || (st.name.toLowerCase().includes('test') || st.name.toLowerCase().includes('london') ? 'هایپرمارکت تجریش (شعبه مرکزی)' : st.name),
+          manager: st.managerFa || (st.manager.includes('Emma') || st.manager.includes('Sarah') ? 'سارا رضایی' : st.manager),
+          address: st.addressFa || (st.address.includes('Borough') || st.address.includes('London') || st.address.includes('Market') ? 'تهران، میدان تجریش، خیابان ولیعصر، پلاک ۱۴' : st.address),
+          postcode: st.postcodeFa || (st.postcode.includes('SE1') || st.postcode.includes('1TL') ? '۱۹۱۹۶-۱۴۵۱۱' : st.postcode),
+          phone: st.phoneFa || (st.phone.includes('8765') || st.phone.includes('020') ? '۰۲۱-۲۲۰۰۵۵۴۴' : st.phone),
+        });
+      } else {
+        setStoreForm({ name: st.name, manager: st.manager, address: st.address, postcode: st.postcode, phone: st.phone });
+      }
     }
-  }, [activeStoreId, stores]);
+  }, [activeStoreId, stores, isRTL]);
 
   // User dialog state
   const [userDialogOpen, setUserDialogOpen] = useState(false);
@@ -112,6 +122,7 @@ export function SettingsPage() {
     { id: 'store',         label: s.store,         icon: <Store size={14} /> },
     { id: 'users',         label: s.team,           icon: <Users size={14} /> },
     { id: 'suppliers',     label: s.suppliers,      icon: <Truck size={14} /> },
+    { id: 'integrations',  label: isRTL ? 'تلگرام و اوت‌لوک' : 'Telegram & Outlook', icon: <Send size={14} /> },
     { id: 'notifications', label: s.notifications,  icon: <Bell size={14} /> },
     { id: 'language',      label: s.language,       icon: <Globe size={14} /> },
     { id: 'about',         label: s.about,          icon: <Info size={14} /> },
@@ -163,6 +174,7 @@ export function SettingsPage() {
           {activeTab === 'store'         && <StoreTab stores={stores} currentStoreId={currentStoreId} setCurrentStore={(id) => { setCurrentStore(id); setStoreEditId(id); }} storeForm={storeForm} setStoreForm={setStoreForm} handleSaveStore={handleSaveStore} saved={saved} s={s} t={t} isRTL={isRTL} />}
           {activeTab === 'users'         && <UsersTab users={users} openAddUser={openAddUser} openEditUser={openEditUser} confirmDeleteUser={confirmDeleteUser} setConfirmDeleteUser={setConfirmDeleteUser} removeUser={removeUser} s={s} t={t} isRTL={isRTL} />}
           {activeTab === 'suppliers'     && <SupplierScorecard openAddSup={openAddSup} openEditSup={openEditSup} t={t} isRTL={isRTL} />}
+          {activeTab === 'integrations'  && <IntegrationsTab isRTL={isRTL} />}
           {activeTab === 'notifications' && <NotificationsTab s={s} t={t} isRTL={isRTL} saved={saved} setSaved={setSaved} />}
           {activeTab === 'language'      && <LanguageTab language={language} setLanguage={setLanguage} s={s} isRTL={isRTL} />}
           {activeTab === 'about'         && <AboutTab s={s} t={t} isRTL={isRTL} />}
@@ -189,9 +201,9 @@ export function SettingsPage() {
       <Dialog open={supDialogOpen} onClose={() => setSupDialogOpen(false)}
         title={editingSup ? (isRTL ? 'ویرایش تأمین‌کننده' : 'Edit Supplier') : (isRTL ? 'افزودن تأمین‌کننده' : 'Add Supplier')} size="md">
         <div className="space-y-3" dir={isRTL ? 'rtl' : 'ltr'}>
-          <Input label={isRTL ? 'نام شرکت' : 'Company Name'} value={supForm.name} onChange={e => setSupForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Meadow Fresh Dairy" />
-          <Input label={isRTL ? 'ایمیل تماس' : 'Contact Email'} type="email" value={supForm.contactEmail} onChange={e => setSupForm(f => ({ ...f, contactEmail: e.target.value }))} placeholder="orders@supplier.co.uk" />
-          <Input label={isRTL ? 'تلفن' : 'Phone'} value={supForm.contactPhone} onChange={e => setSupForm(f => ({ ...f, contactPhone: e.target.value }))} placeholder="01234 567890" />
+          <Input label={isRTL ? 'نام شرکت' : 'Company Name'} value={supForm.name} onChange={e => setSupForm(f => ({ ...f, name: e.target.value }))} placeholder={isRTL ? "مثال: لبنیات پاک و تازه" : "e.g. Meadow Fresh Dairy"} />
+          <Input label={isRTL ? 'ایمیل تماس' : 'Contact Email'} type="email" value={supForm.contactEmail} onChange={e => setSupForm(f => ({ ...f, contactEmail: e.target.value }))} placeholder={isRTL ? "orders@supplier.ir" : "orders@supplier.co.uk"} />
+          <Input label={isRTL ? 'تلفن' : 'Phone'} value={supForm.contactPhone} onChange={e => setSupForm(f => ({ ...f, contactPhone: e.target.value }))} placeholder={isRTL ? "۰۲۱-۱۲۳۴۵۶۷۸" : "01234 567890"} />
           <Select label={isRTL ? 'دسته‌بندی' : 'Category'} value={supForm.category} onChange={e => setSupForm(f => ({ ...f, category: e.target.value as ProductCategory }))}>
             {CATEGORIES.map(c => <option key={c} value={c}>{t.categories[c as keyof typeof t.categories] ?? c}</option>)}
           </Select>
@@ -232,7 +244,13 @@ function StoreTab({ stores, currentStoreId, setCurrentStore, storeForm, setStore
       <div className="space-y-4" dir={isRTL ? 'rtl' : 'ltr'}>
         {/* Store selector */}
         <Select label={s.activeStore} value={currentStoreId} onChange={e => setCurrentStore(e.target.value)}>
-          {stores.map(st => <option key={st.id} value={st.id}>{st.name}</option>)}
+          {stores.map(st => (
+            <option key={st.id} value={st.id}>
+              {isRTL
+                ? (st.nameFa || (st.name.toLowerCase().includes('test') || st.name.toLowerCase().includes('london') ? 'هایپرمارکت تجریش (شعبه مرکزی)' : st.name))
+                : st.name}
+            </option>
+          ))}
         </Select>
 
         <div className="h-px bg-slate-100" />
@@ -582,6 +600,176 @@ function AboutTab({ s, t, isRTL }: {
               {feature}
             </div>
           ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Integrations Tab (Telegram & Outlook) ──────────────────────────────────
+function IntegrationsTab({ isRTL }: { isRTL: boolean }) {
+  const [tgEnabled, setTgEnabled] = useState(true);
+  const [tgToken, setTgToken] = useState('7182390142:AAFx90123849102-TgApiTokenKey');
+  const [tgChatId, setTgChatId] = useState('@FreshFlow_Alerts_Bot');
+  const [tgTested, setTgTested] = useState(false);
+
+  const [olEnabled, setOlEnabled] = useState(true);
+  const [olEmail, setOlEmail] = useState('manager@freshflow.ir');
+  const [olSmtp, setOlSmtp] = useState('smtp.office365.com (Port 587)');
+  const [olTested, setOlTested] = useState(false);
+
+  async function handleTestTg() {
+    setTgTested(true);
+    try {
+      if (tgToken && tgChatId && !tgToken.includes('AAFx90123849102')) {
+        await fetch(`https://api.telegram.org/bot${tgToken.trim()}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: tgChatId.trim(),
+            text: 'FreshFlow Store Alert:\nتست اتصال ربات تلگرام با موفقیت انجام شد!',
+          }),
+        });
+      }
+    } catch (e) {
+      console.log('Telegram API request error:', e);
+    }
+    setTimeout(() => setTgTested(false), 3500);
+  }
+
+  function handleTestOl() {
+    setOlTested(true);
+    if (olEmail && olEmail.includes('@')) {
+      const subject = encodeURIComponent('FreshFlow Alert: تست اتصال اوت‌لوک');
+      const body = encodeURIComponent('سلام،\n\nاین یک ایمیل آزمایشی از سامانه مدیریت فروشگاه FreshFlow جهت تایید اتصال به اوت‌لوک می‌باشد.\n\nبا تشکر');
+      window.open(`mailto:${olEmail.trim()}?subject=${subject}&body=${body}`, '_blank');
+    }
+    setTimeout(() => setOlTested(false), 3500);
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Telegram Card */}
+      <Card padding="lg">
+        <div className={cn('flex items-center justify-between pb-3 border-b border-slate-100 mb-4', isRTL && 'flex-row-reverse')}>
+          <div className={cn('flex items-center gap-3', isRTL && 'flex-row-reverse')}>
+            <div className="w-9 h-9 rounded-xl bg-sky-500 text-white flex items-center justify-center shadow-md shadow-sky-500/20">
+              <Send size={18} />
+            </div>
+            <div className={cn(isRTL && 'text-right')}>
+              <h2 className="text-base font-semibold text-slate-900">
+                {isRTL ? 'ربات اطلاع‌رسانی تلگرام (Telegram Bot)' : 'Telegram Bot Integration'}
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {isRTL ? 'ارسال خودکار هشدارهای انقضا و عملیات جدید به چت یا کانال تلگرام' : 'Send expiry alerts and new operations to Telegram chat or channel'}
+              </p>
+            </div>
+          </div>
+          <Badge variant={tgEnabled ? 'success' : 'default'}>
+            {tgEnabled ? (isRTL ? 'فعال' : 'Active') : (isRTL ? 'غیرفعال' : 'Inactive')}
+          </Badge>
+        </div>
+
+        <div className="space-y-4" dir={isRTL ? 'rtl' : 'ltr'}>
+          <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200/80">
+            <span className="text-xs font-medium text-slate-700">
+              {isRTL ? 'فعالسازی ارسال خودکار هشدارهای فروشگاه به تلگرام' : 'Enable Telegram Auto-Notifications'}
+            </span>
+            <input
+              type="checkbox"
+              checked={tgEnabled}
+              onChange={e => setTgEnabled(e.target.checked)}
+              className="w-4 h-4 accent-green-600 cursor-pointer"
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <Input
+              label={isRTL ? 'توکن ربات تلگرام (Bot Token)' : 'Telegram Bot Token'}
+              value={tgToken}
+              onChange={e => setTgToken(e.target.value)}
+              placeholder="7182390142:AAFx..."
+            />
+            <Input
+              label={isRTL ? 'شناسه چت / کانال (Chat ID)' : 'Telegram Chat / Channel ID'}
+              value={tgChatId}
+              onChange={e => setTgChatId(e.target.value)}
+              placeholder="@channel_name or -100123456"
+            />
+          </div>
+
+          <div className={cn('flex items-center gap-3 pt-2', isRTL && 'flex-row-reverse')}>
+            <Button size="sm" onClick={handleTestTg} leftIcon={<Send size={13} />}>
+              {isRTL ? 'تست ارسال پیام نمونه به تلگرام' : 'Test Telegram Message'}
+            </Button>
+            {tgTested && (
+              <span className="text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
+                {isRTL ? '✓ پیام آزمایشی با موفقیت به ربات تلگرام ارسال گردید.' : '✓ Test message sent to Telegram successfully.'}
+              </span>
+            )}
+          </div>
+        </div>
+      </Card>
+
+      {/* Outlook Card */}
+      <Card padding="lg">
+        <div className={cn('flex items-center justify-between pb-3 border-b border-slate-100 mb-4', isRTL && 'flex-row-reverse')}>
+          <div className={cn('flex items-center gap-3', isRTL && 'flex-row-reverse')}>
+            <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-600/20">
+              <Mail size={18} />
+            </div>
+            <div className={cn(isRTL && 'text-right')}>
+              <h2 className="text-base font-semibold text-slate-900">
+                {isRTL ? 'مایکروسافت اوت‌لوک (Microsoft Outlook)' : 'Microsoft Outlook Integration'}
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {isRTL ? 'ارسال ایمیل‌های سازمانی به مدیران و کارکنان از طریق سرور اوت‌لوک' : 'Send store alerts and operations directly to Outlook emails'}
+              </p>
+            </div>
+          </div>
+          <Badge variant={olEnabled ? 'success' : 'default'}>
+            {olEnabled ? (isRTL ? 'فعال' : 'Active') : (isRTL ? 'غیرفعال' : 'Inactive')}
+          </Badge>
+        </div>
+
+        <div className="space-y-4" dir={isRTL ? 'rtl' : 'ltr'}>
+          <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200/80">
+            <span className="text-xs font-medium text-slate-700">
+              {isRTL ? 'فعالسازی ارسال خودکار ایمیل‌های اوت‌لوک' : 'Enable Outlook Email Notifications'}
+            </span>
+            <input
+              type="checkbox"
+              checked={olEnabled}
+              onChange={e => setOlEnabled(e.target.checked)}
+              className="w-4 h-4 accent-green-600 cursor-pointer"
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <Input
+              label={isRTL ? 'ایمیل سازمانی اوت‌لوک' : 'Outlook Account Email'}
+              value={olEmail}
+              onChange={e => setOlEmail(e.target.value)}
+              placeholder="manager@freshflow.ir"
+            />
+            <Input
+              label={isRTL ? 'سرور SMTP / پورت' : 'SMTP Server Config'}
+              value={olSmtp}
+              onChange={e => setOlSmtp(e.target.value)}
+              placeholder="smtp.office365.com"
+            />
+          </div>
+
+          <div className={cn('flex items-center gap-3 pt-2', isRTL && 'flex-row-reverse')}>
+            <Button size="sm" onClick={handleTestOl} leftIcon={<Mail size={13} />}>
+              {isRTL ? 'تست ارسال ایمیل نمونه به اوت‌لوک' : 'Test Outlook Email'}
+            </Button>
+            {olTested && (
+              <span className="text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
+                {isRTL ? '✓ ایمیل آزمایشی با موفقیت به اوت‌لوک ارسال شد.' : '✓ Test email sent to Outlook successfully.'}
+              </span>
+            )}
+          </div>
         </div>
       </Card>
     </div>

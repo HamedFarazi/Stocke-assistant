@@ -85,22 +85,31 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             {label}
           </label>
         )}
-        <select
-          ref={ref}
-          id={selectId}
-          dir={selectDir}
-          className={cn(
-            'w-full h-9 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900',
-            'focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent',
-            'disabled:opacity-50',
-            isRTL && 'text-right',
-            error && 'border-red-400',
-            className
-          )}
-          {...props}
-        >
-          {children}
-        </select>
+        <div className="relative">
+          <select
+            ref={ref}
+            id={selectId}
+            dir={selectDir}
+            className={cn(
+              'w-full h-9 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 appearance-none cursor-pointer',
+              'transition-all duration-200 hover:border-slate-300 hover:shadow-sm',
+              'focus:outline-none focus:ring-2 focus:ring-green-600/20 focus:border-green-600',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+              isRTL ? 'pr-3 pl-8 text-right' : 'pl-3 pr-8 text-left',
+              error && 'border-red-400 focus:ring-red-400/20',
+              className
+            )}
+            {...props}
+          >
+            {children}
+          </select>
+          <div className={cn(
+            'absolute top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center',
+            isRTL ? 'left-2.5' : 'right-2.5'
+          )}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </div>
         {error && <p className={cn('text-xs text-red-600', isRTL && 'text-right')}>{error}</p>}
       </div>
     );

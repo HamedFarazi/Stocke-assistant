@@ -25,6 +25,8 @@ const schema = z.object({
 });
 type FormValues = z.infer<typeof schema>;
 
+import { Send, Mail } from 'lucide-react';
+
 interface CreateOperationDialogProps {
   open: boolean;
   onClose: () => void;
@@ -37,6 +39,8 @@ export function CreateOperationDialog({ open, onClose, prefilledItem }: CreateOp
   const { t, isRTL } = useTranslation();
   const op = t.operations;
   const [saved, setSaved] = useState(false);
+  const [sendTelegram, setSendTelegram] = useState(true);
+  const [sendOutlook, setSendOutlook] = useState(true);
 
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<FormValues>({
     resolver: zodResolver(schema) as import('react-hook-form').Resolver<FormValues>,
@@ -125,7 +129,64 @@ export function CreateOperationDialog({ open, onClose, prefilledItem }: CreateOp
             <Input label={op.dueDate} type="date" error={errors.dueDate?.message} {...register('dueDate')} />
           </div>
           <Textarea label={op.notesOptional} rows={2} placeholder={op.notesPlaceholder} {...register('notes')} />
-          <div className={cn('flex justify-end gap-2 pt-1', isRTL && 'flex-row-reverse')}>
+
+          {/* Send To: Telegram & Outlook Integrations */}
+          <div className="space-y-2 pt-3 border-t border-slate-100">
+            <label className={cn('text-xs font-bold text-slate-700 block', isRTL && 'text-right')}>
+              {isRTL ? 'ارسال خودکار پیام اطلاع‌رسانی به:' : 'Send Notification To:'}
+            </label>
+            <div className={cn('grid grid-cols-2 gap-2.5', isRTL && 'flex-row-reverse')}>
+              {/* Telegram */}
+              <button
+                type="button"
+                onClick={() => setSendTelegram(!sendTelegram)}
+                className={cn(
+                  'flex items-center gap-2.5 p-2.5 rounded-xl border text-xs font-medium transition-all cursor-pointer',
+                  sendTelegram
+                    ? 'bg-sky-50 border-sky-300 text-sky-900 shadow-sm ring-1 ring-sky-300/50'
+                    : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300',
+                  isRTL && 'flex-row-reverse text-right'
+                )}
+              >
+                <div className={cn('w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0', sendTelegram ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-500')}>
+                  <Send size={13} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-xs leading-none">{isRTL ? 'تلگرام (Telegram)' : 'Telegram Bot'}</p>
+                  <p className="text-[10px] text-slate-400 mt-1">{isRTL ? 'ربات تلگرام فروشگاه' : 'Bot Notification'}</p>
+                </div>
+                <span className={cn('w-4 h-4 rounded-full border flex items-center justify-center text-[10px]', sendTelegram ? 'bg-sky-500 border-sky-500 text-white' : 'border-slate-300')}>
+                  {sendTelegram && '✓'}
+                </span>
+              </button>
+
+              {/* Outlook */}
+              <button
+                type="button"
+                onClick={() => setSendOutlook(!sendOutlook)}
+                className={cn(
+                  'flex items-center gap-2.5 p-2.5 rounded-xl border text-xs font-medium transition-all cursor-pointer',
+                  sendOutlook
+                    ? 'bg-blue-50 border-blue-300 text-blue-900 shadow-sm ring-1 ring-blue-300/50'
+                    : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300',
+                  isRTL && 'flex-row-reverse text-right'
+                )}
+              >
+                <div className={cn('w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0', sendOutlook ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500')}>
+                  <Mail size={13} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-xs leading-none">{isRTL ? 'اوت‌لوک (Outlook)' : 'Outlook Email'}</p>
+                  <p className="text-[10px] text-slate-400 mt-1">{isRTL ? 'ایمیل سازمانی مدیر' : 'Email Notification'}</p>
+                </div>
+                <span className={cn('w-4 h-4 rounded-full border flex items-center justify-center text-[10px]', sendOutlook ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300')}>
+                  {sendOutlook && '✓'}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div className={cn('flex justify-end gap-2 pt-2', isRTL && 'flex-row-reverse')}>
             <Button type="button" variant="secondary" onClick={onClose}>{t.common.cancel}</Button>
             <Button type="submit" isLoading={isSubmitting}>{op.createOperation}</Button>
           </div>

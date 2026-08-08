@@ -4,7 +4,9 @@ export const initialWorkflows: Workflow[] = [
   {
     id: 'wf-001',
     name: 'Expiry Protection',
+    nameFa: 'محافظت از انقضا',
     description: 'Automatically creates an urgent operation and notifies the manager when a product is within 7 days of expiry.',
+    descriptionFa: 'ایجاد خودکار عملیات اضطراری و اطلاع‌رسانی به مدیر هنگام رسیدن محصول به ۷ روز مانده تا انقضا.',
     status: 'active',
     executionCount: 14,
     lastExecutedAt: new Date(Date.now() - 1000 * 60 * 42).toISOString(),
@@ -70,7 +72,9 @@ export const initialWorkflows: Workflow[] = [
   {
     id: 'wf-002',
     name: 'Expired Product Protection',
+    nameFa: 'محافظت از کالاهای منقضی‌شده',
     description: 'When a product expires, marks it as expired, creates a removal operation, and notifies staff.',
+    descriptionFa: 'به محض انقضای محصول، آن را منقضی علامت‌گذاری کرده، عملیات جمع‌آوری ایجاد می‌کند و به کارکنان اطلاع می‌دهد.',
     status: 'active',
     executionCount: 6,
     lastExecutedAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
@@ -136,7 +140,9 @@ export const initialWorkflows: Workflow[] = [
   {
     id: 'wf-003',
     name: 'Low Stock Protection',
+    nameFa: 'محافظت از موجودی کم',
     description: 'Creates a restock operation and notifies the manager when stock falls below 5 units.',
+    descriptionFa: 'در صورت کاهش موجودی کالا به کمتر از ۵ واحد، عملیات شارژ مجدد ایجاد کرده و به مدیر اطلاع می‌دهد.',
     status: 'active',
     executionCount: 9,
     lastExecutedAt: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
@@ -202,7 +208,9 @@ export const initialWorkflows: Workflow[] = [
   {
     id: 'wf-004',
     name: 'High Risk Expiry',
+    nameFa: 'ریسک انقضای موجودی بالا',
     description: 'When a product has more than 20 units and expires within 7 days, creates a discount review operation.',
+    descriptionFa: 'در صورت وجود بیش از ۲۰ واحد کالا با انقضای کمتر از ۷ روز، عملیات بررسی اعمال تخفیف را فعال می‌کند.',
     status: 'inactive',
     executionCount: 3,
     lastExecutedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),

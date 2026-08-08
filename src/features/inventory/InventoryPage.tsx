@@ -191,7 +191,7 @@ export function InventoryPage() {
           </Select>
           <Select value={supplierFilter} onChange={e => setSupplierFilter(e.target.value)} className="w-44 text-xs" dir={isRTL ? 'rtl' : 'ltr'}>
             <option value="">{inv.allSuppliers}</option>
-            {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            {suppliers.map(s => <option key={s.id} value={s.id}>{isRTL && s.nameFa ? s.nameFa : s.name}</option>)}
           </Select>
           {hasFilters && (
             <Button size="sm" variant="ghost" onClick={() => { setSearch(''); setCategoryFilter(''); setStockFilter(''); setRiskFilter(''); setSupplierFilter(''); }}>
@@ -259,7 +259,9 @@ export function InventoryPage() {
                     >
                       <td className="px-4 py-3">
                         <div className={cn(isRTL && 'text-right')}>
-                          <p className="font-medium text-slate-900 text-sm group-hover:text-green-800 transition-colors">{item.product.name}</p>
+                          <p className="font-medium text-slate-900 text-sm group-hover:text-green-800 transition-colors">
+                            {isRTL && item.product.nameFa ? item.product.nameFa : item.product.name}
+                          </p>
                           <p className="text-[11px] text-slate-400 mt-0.5">{item.product.sku}</p>
                         </div>
                       </td>
